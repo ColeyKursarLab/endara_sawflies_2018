@@ -1,30 +1,3 @@
-import requests
-
-def get_ftrd():
-    """Get featuretablerawdata from database."""
-
-    url = "http://coleykursarlab.chpc.utah.edu/api/featuretablerawdata/"
-    ftrd = []
-    count = 1
-
-    while True:
-        if count % 10 == 0:
-            print(count, "pages processed")
-
-        resp = requests.get(url)
-        data = resp.json()
-        ftrd += data["results"]
-
-        if data["next"] is None:
-            print(count, "pages total")
-            break
-        else:
-            url = data["next"]
-
-        count += 1
-
-    return ftrd
-
 def build_feature_table(raw_data, mz_error=0.01, rt_error=0.3):
     """Group features across samples.
 
@@ -216,21 +189,6 @@ def fill_compounds(filled_features, compound_table):
                          "TICs": [x for i, x in enumerate(sample_compound["TICs"]) if feature_within_range[i]]
                     }
                     sample_compound = sample_compound_2
-
-                #sample_compound["rel_abund"] = [x / max(sample_compound["TICs"]) for x in sample_compound["TICs"]]
-                #shared_rel_abund = \
-                # [sample_compound["rel_abund"][sample_compound["features"].index(x)] for x in shared_major_features]
-                
-                #if False in [x > 0.33 for x in shared_rel_abund]:
-                #    low_abund_feature = shared_major_features[shared_rel_abund.index(min(shared_rel_abund))]
-                #    low_abund = sample_compound["TICs"][sample_compound["features"].index(low_abund_feature)]
-                #    sample_compound_2 = {
-                #        "features": [x for i, x in enumerate(sample_compound["features"]) if \
-                #         sample_compound["TICs"][i] < 3 * low_abund],
-                #         "TICs": [x for i, x in enumerate(sample_compound["TICs"]) if \
-                #         sample_compound["TICs"][i] < 3 * low_abund]
-                #    }
-                    
                 if cosine_score(compound_table[compound], sample_compound, abundance="TICs", features="features")\
                 >= 0.3:
                     if sample in filled_compounds:
